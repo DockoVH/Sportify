@@ -1,0 +1,43 @@
+services:
+  sportify:
+    container_name: sportify_api
+    build: .
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - mreza
+    ports:
+      - 8080:8080
+    develop:
+      watch:
+        - action: rebuild
+          path: .
+          ignore:
+            - .git/
+
+  mongo:
+    image: mongo:latest
+    container_name: sportify_mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo_podaci:/data/db
+    networks:
+      - mreza
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok | mongosh localhost:27017/test --quiet'
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+networks:
+  mreza:
+    driver: bridge
+
+volumes:
+  mongo_podaci:
