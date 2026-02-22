@@ -14,6 +14,7 @@ type Korisnik struct {
 	LozinkaHes string `bson:"lozinka_hes"`
 	SlikaBase64 string `bson:"slika_base64"`
 	Ocene []Ocena `bson:"ocene,omitempty"`
+	Admin bool `bson:"admin"`
 }
 
 type Ocena struct {
@@ -22,7 +23,7 @@ type Ocena struct {
 	Vrednost uint `bson:"vrednost"`
 }
 
-func VratiKorisnika(mongoClient *mongo.Client, username string) (*Korisnik, error){
+func VratiKorisnika(mongoClient *mongo.Client, username string) (*Korisnik, error) {
 	korisnici := mongoClient.Database("sportify").Collection("korisnici")
 
 	var korisnik Korisnik
@@ -47,12 +48,20 @@ func DodajKorisnika(mongoClient *mongo.Client, korisnik Korisnik) (string, error
 func IzmeniKorisnika(mongoClient *mongo.Client, korisnik Korisnik) error {
 	korisnici := mongoClient.Database("sportify").Collection("korisnici")
 	ctx := context.Background()
-	var stariPodaci Korisnik
 
 	filter := bson.M{ "_id": korisnik.Username }
 	update := bson.M{ "$set": korisnik }
 
-	return korisnici.FindOneAndUpdate(ctx, filter, update).Decode(&stariPodaci)
+	rezultat, err := korisnici.UpdateOne(ctx, filter, update)
+    if err != nil {
+        return err
+    }
+
+    if rezultat.MatchedCount == 0 {
+        return mongo.ErrNoDocuments
+    }
+
+    return nil
 }
 
 func ObrisiKorisnika(mongoClient *mongo.Client, username string) (int64, error) {
@@ -158,7 +167,7 @@ func IzmeniOcenuKorisnika(mongoClient *mongo.Client, username string, ocena Ocen
 
 	rezultat, err := korisnici.UpdateOne(ctx, filter, update)
     if err != nil {
-        return nil
+        return err
     }
 
     if rezultat.MatchedCount == 0 {
