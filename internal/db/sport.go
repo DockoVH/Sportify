@@ -9,7 +9,7 @@ import (
 
 type Sport struct {
 	Naziv string `bson:"_id"`
-	BrojIgraca uint `bson:"broj_igraca"`
+	PotrebnoIgraca int `bson:"potrebno_igraca"`
 }
 
 func VratiSport(mongoClient *mongo.Client, naziv string) (*Sport, error) {

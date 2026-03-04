@@ -1,0 +1,133 @@
+package views
+
+import (
+	"Sportify/internal/db"
+)
+
+templ NoviOglas(korisnik *db.Korisnik, sportovi []db.Sport, lokacije []db.Lokacija, sportSablon *db.Sport) {
+	@Raspored(korisnik) {
+		<form class="grid grid-cols-3 gap-5 font-bold font-mono" hx-post="/api/dodajOglas" hx-swap="none">
+
+			<div class="col-span-2 px-5 py-15">
+				<div class="">
+					<div class="w-full aspect-video border border-red-600" id="map" data-center="[43.3180, 21.8940]" data-zoom="20">
+						<div data-tile="EsriWorldImagery"></div>
+						<div data-tile="OpenStreetMap" data-default-tile></div>
+						<span class="custom-control zoom-level" id="zoom-level"></span>
+						<div data-hyperleaflet-source id="mapa-podaci">
+							<input name="novi-oglas-koordinate" id="novi-oglas-koordinate" class="hidden">
+						</div>
+					</div>
+
+					<div class="relative bg-white w-6/7 mt-8 p-5 shadow-md">
+						<div class="absolute top-0 left-0 w-40 h-2 bg-red-600 -translate-y-1/2 translate-x-1/3 -skew-x-12"></div>
+						<div class="text-gray-400 font-light uppercase mb-4">opis</div>
+						<textarea placeholder="Dodajte opis..." id="opis-input" name="novi-oglas-opis"
+							class="w-full bg-white shadow-md border border-gray-400 rounded-xl p-3 mt-5 resize-none"></textarea>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-span-1 py-15">
+				<div class="bg-(--crna) p-5 pb-15">
+					<div class="text-white text-3xl font-bold uppercase py-5">podaci</div>
+
+					<div class="border-t-2 border-red-600 mt-2 py-3 flex flex-row flex-nowrap">
+						<div class="flex flex-col flex-nowrap justify-start">
+							<div class="bg-red-600 aspect-square w-10 flex justify-center items-center">
+								<span class="text-white text-xl">1</span>
+							</div>
+						</div>
+
+						<div class="flex flex-col flex-nowrap ms-3 text-white w-full">
+							<div class="uppercase text-gray-400">sport</div>
+							<select name="novi-oglas-sport" id="novi-oglas-sport" required 
+								class="w-full border border-red-600 rounded-xl p-2 my-2 text-white bg-black hover:cursor-pointer">
+								<option hidden disabled selected value class="uppercase">Izaberite sport</option>
+								for _, sport := range sportovi {
+									if sportSablon != nil && sportSablon.Naziv == sport.Naziv {
+										<option selected value={ sport.Naziv } class="uppercase">{ sport.Naziv }</option>
+									} else {
+										<option value={ sport.Naziv } class="uppercase">{ sport.Naziv }</option>
+									}
+								}
+							</select>
+						</div>
+					</div>
+
+					<div class="border-t-2 border-red-600 py-3 flex flex-row flex-nowrap">
+						<div class="flex flex-col flex-nowrap justify-start">
+							<div class="bg-red-600 aspect-square w-10 flex justify-center items-center">
+								<span class="text-white text-xl">2</span>
+							</div>
+						</div>
+						<div class="flex flex-col flex-nowrap ms-3 text-white w-full">
+							<div class="uppercase text-gray-400">mesto</div>
+							<select name="novi-oglas-mesto" id="novi-oglas-mesto" required
+								class="w-full border border-red-600 rounded-xl p-2 my-2 text-white bg-black hover:cursor-pointer">
+								<option hidden disabled selected value class="uppercase">Izaberite lokaciju</option>
+								for _, lokacija := range lokacije {
+									<option value={ lokacija.Mesto } class="uppercase">{ lokacija.Mesto }</option>
+								}
+							</select>
+						</div>
+					</div>
+					
+					<div class="border-t-2 border-red-600 py-3 flex flex-row flex-nowrap">
+						<div class="flex flex-col flex-nowrap justify-start">
+							<div class="bg-red-600 aspect-square w-10 flex justify-center items-center">
+								<span class="text-white text-xl">3</span>
+							</div>
+						</div>
+						<div class="flex flex-col flex-nowrap ms-3 text-white w-full">
+							<div class="uppercase text-gray-400">datum</div>
+							<input required type="date" id="novi-oglas-datum" name="novi-oglas-datum" 
+								class="dark:[color-scheme:dark] border border-red-600 rounded-xl p-2 bg-black hover:cursor-pointer">
+						</div>
+					</div>
+					
+					<div class="border-y-2 border-red-600 py-3 flex flex-row flex-nowrap">
+						<div class="flex flex-col flex-nowrap justify-start">
+							<div class="bg-red-600 aspect-square w-10 flex justify-center items-center">
+								<span class="text-white text-xl">4</span>
+							</div>
+						</div>
+						<div class="flex flex-col flex-nowrap ms-3 text-white w-full">
+							<div class="uppercase text-gray-400">vreme</div>
+							<input required type="time" id="novi-oglas-vreme" name="novi-oglas-vreme" 
+								class="dark:[color-scheme:dark] border border-red-600 rounded-xl p-2 bg-black hover:cursor-pointer">
+						</div>
+					</div>
+
+					<div class="border-b-2 border-red-600 py-3 flex flex-row flex-nowrap">
+						<div class="flex flex-col flex-nowrap justify-start">
+							<div class="bg-red-600 aspect-square w-10 flex justify-center items-center">
+								<span class="text-white text-xl">5</span>
+							</div>
+						</div>
+						<div class="flex flex-col flex-nowrap ms-3 text-white w-full">
+							<div class="uppercase text-gray-400">potrebno igrača</div>
+							if sportSablon != nil {
+								<input required type="number" name="novi-oglas-potrebno-igraca" id="novi-oglas-potrebno-igraca" min="1" max="99"
+									value={ sportSablon.PotrebnoIgraca } step="1" class="dark:[color-scheme:dark] border border-red-600 rounded-xl p-2 bg-black">
+							} else {
+								<input required type="number" name="novi-oglas-potrebno-igraca" id="novi-oglas-potrebno-igraca" min="1" max="99" value="1" step="1"
+									class="dark:[color-scheme:dark] border border-red-600 rounded-xl p-2 bg-black">
+							}
+						</div>
+					</div>
+
+					<button type="submit" class="uppercase bg-red-600 w-full py-4 mt-12 rounded-lg text-white text-xl 
+										hover:cursor-pointer hover:bg-red-700 transition-all duration-300">
+						Napravi
+					</button>
+					
+				</div>
+			
+			</div>
+
+
+		</form>
+		<script src="/static/skripte/noviOglas.js"></script>
+	}
+}

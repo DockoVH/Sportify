@@ -18,7 +18,7 @@ type Oglas struct {
 	PotrebnoIgraca int `bson:"potrebno_igraca"`
 	Mesto string `bson:"mesto"`
 	Koordinate [2]float64 `bson:"koordinate,omitempty"`
-	Prijavljeni []string `bson:"prijavljeni,omitempty"`
+	Vreme time.Time `bson:"vreme"`
 	Komentari []Komentar `bson:"komentari,omitempty"`
 }
 

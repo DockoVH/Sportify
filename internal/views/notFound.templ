@@ -1,0 +1,14 @@
+package views
+
+import (
+	"Sportify/internal/db"
+)
+
+templ NotFound(korisnik *db.Korisnik) {
+	@Raspored(korisnik) {
+		<div class="relative w-full flex justify-center items-center">
+			<div class="text-[5000%] text-white text-shadow-sm">404</div>
+			<div class="absolute t-1/2 left-1/2 text-[700%] -translate-x-1/2 -translate-y-1/2 text-red-600">Not Found</div>
+		</div>
+	}
+}

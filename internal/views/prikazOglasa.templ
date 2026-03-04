@@ -1,0 +1,226 @@
+package views
+
+import (
+	"time"
+	"fmt"
+
+	"Sportify/internal/db"
+)
+
+templ PrikazOglasa(korisnik *db.Korisnik, oglas *db.Oglas) {
+	@Raspored(korisnik) {
+		<form class="grid grid-cols-3 gap-5 font-bold font-mono" hx-post={ fmt.Sprintf("/api/izmeniOglas/%v", oglas.ID.Hex()) } hx-swap="none">
+
+			<div class="col-span-2 px-5 py-15">
+				if (korisnik != nil && korisnik.Username == oglas.Vlasnik) || (oglas.Koordinate[0] != 0 && oglas.Koordinate[1] != 0) {
+					<div class="w-full aspect-video border border-red-600" id="map" 
+							data-center={ fmt.Sprintf("[%v, %v]", oglas.Koordinate[0], oglas.Koordinate[1]) } data-zoom="20">
+						<div data-tile="EsriWorldImagery"></div>
+						<div data-tile="OpenStreetMap" data-default-tile></div>
+						<span class="custom-control zoom-level" id="zoom-level"></span>
+						<div data-hyperleaflet-source id="mapa-podaci">
+							if oglas.Koordinate[0] != 0 && oglas.Koordinate[1] != 0 {
+								<span id="mapa-oznaka" data-id="1" data-geometry-type="Point" data-geometry={ fmt.Sprintf("[%v, %v]", oglas.Koordinate[0], oglas.Koordinate[1]) }></span>
+								<input name="izmeni-oglas-koordinate" id="izmeni-oglas-koordinate" class="hidden">
+							}
+						</div>
+					</div>
+				} else {
+					<div class="w-full aspect-video border border-red-600 flex justify-center items-center uppercase text-5xl">
+                        <span class="-skew-x-12 skew-y-4">Mapa nije dostupna...</span>
+                    </div>
+				}
+
+				<div class="relative bg-white w-6/7 mt-8 p-5 shadow-md">
+					<div class="absolute top-0 left-0 w-40 h-2 bg-red-600 -translate-y-1/2 translate-x-1/3 -skew-x-12"></div>
+					<div class="text-gray-400 font-light uppercase mb-4">opis</div>
+					if oglas.Opis != "" {
+						<div class="text-gray-700"> { oglas.Opis } </div>
+					} else {
+						<div class="text-gray-700">Nema opisa...</div>
+					}
+				</div>
+			</div>
+
+			<div class="col-span-1 py-15">
+				<div class="bg-(--crna) p-5 pb-15 relative">
+					if korisnik != nil && korisnik.Username == oglas.Vlasnik {
+                        <div hx-delete={ fmt.Sprintf("/api/obrisiOglas/%v", oglas.ID.Hex()) } hx-confirm="Da li ste sigurni da želite da obrišete oglas?"
+							hx-swap="none" class="absolute top-10 right-10 bg-cover bg-[url(/static/slike/kanta_bela.png)] hover:bg-[url(/static/slike/kanta_hover.png)]
+							hover:cursor-pointer w-5 h-5 ">
+						</div>
+					}
+					<div class="text-white text-3xl uppercase py-5">podaci</div>
+
+					<div class="border-t-2 border-red-600 mt-2 py-3 flex flex-row flex-nowrap">
+						<div class="flex flex-col flex-nowrap justify-start">
+							<div class="bg-red-600 aspect-square w-10 flex justify-center items-center">
+								<span class="text-white text-xl">1</span>
+							</div>
+						</div>
+						<div class="flex flex-col flex-nowrap ms-3 text-white">
+							<div class="uppercase text-gray-400">organizator</div>
+							<div>
+								<a href={ fmt.Sprintf("/profil/%v", oglas.Vlasnik) }>
+									<span class="uppercase text-red-600 hover:cursor-pointer">{ oglas.Vlasnik }</span>
+								</a>
+							</div>
+						</div>
+					</div>
+
+					<div class="border-t-2 border-red-600 mt-2 py-3 flex flex-row flex-nowrap">
+						<div class="flex flex-col flex-nowrap justify-start">
+							<div class="bg-red-600 aspect-square w-10 flex justify-center items-center">
+								<span class="text-white text-xl">2</span>
+							</div>
+						</div>
+						<div class="flex flex-col flex-nowrap ms-3 text-white">
+							<div class="uppercase text-gray-400">sport</div>
+							<div class="uppercase">{ oglas.Sport }</div>
+						</div>
+					</div>
+
+					<div class="border-t-2 border-red-600 py-3 flex flex-row flex-nowrap">
+						<div class="flex flex-col flex-nowrap justify-start">
+							<div class="bg-red-600 aspect-square w-10 flex justify-center items-center">
+								<span class="text-white text-xl">3</span>
+							</div>
+						</div>
+						<div class="flex flex-col flex-nowrap ms-3 text-white">
+							<div class="uppercase text-gray-400">mesto</div>
+							<div class="uppercase">{ oglas.Mesto }</div>
+						</div>
+					</div>
+					
+					<div class="border-t-2 border-red-600 py-3 flex flex-row flex-nowrap">
+						<div class="flex flex-col flex-nowrap justify-start">
+							<div class="bg-red-600 aspect-square w-10 flex justify-center items-center">
+								<span class="text-white text-xl">4</span>
+							</div>
+						</div>
+						<div class="flex flex-col flex-nowrap ms-3 text-white">
+							<div class="uppercase text-gray-400">datum</div>
+							<div class="uppercase">{ oglas.Vreme.Format(time.DateOnly) }</div>
+						</div>
+					</div>
+					
+					<div class="border-y-2 border-red-600 py-3 flex flex-row flex-nowrap">
+						<div class="flex flex-col flex-nowrap justify-start">
+							<div class="bg-red-600 aspect-square w-10 flex justify-center items-center">
+								<span class="text-white text-xl">5</span>
+							</div>
+						</div>
+						<div class="flex flex-col flex-nowrap ms-3 text-white">
+							<div class="uppercase text-gray-400">vreme</div>
+							<div class="uppercase">{ oglas.Vreme.Format(time.TimeOnly)[:5] }</div>
+						</div>
+					</div>
+
+					<div class="border-b-2 border-red-600 py-3 flex flex-row flex-nowrap">
+						<div class="flex flex-col flex-nowrap justify-start">
+							<div class="bg-red-600 aspect-square w-10 flex justify-center items-center">
+								<span class="text-white text-xl">6</span>
+							</div>
+						</div>
+						<div class="flex flex-col flex-nowrap ms-3 text-white text-nowrap">
+							<div class="uppercase text-gray-400">potrebno igrača</div>
+							<div id="potrebno-igraca-vrednost" class="uppercase">{ oglas.PotrebnoIgraca }</div>
+						</div>
+						if korisnik != nil && korisnik.Username == oglas.Vlasnik {
+							<div class="flex flex-col flex-nowrap justify-start">
+								<div class="w-10 h-full flex flex-col flex-nowrap ms-32">
+									<button id="povecaj-broj-igraca" class="text-white text-xl bg-black border border-red-500 rounded-lg aspect-square h-1/2 hover:cursor-pointer">
+										+
+									</button>
+									<button id="smanji-broj-igraca" class="text-white text-xl bg-black border border-red-500 rounded-lg aspect-square h-1/2 hover:cursor-pointer">
+										-
+									</button>
+								</div>
+							</div>
+						}
+						<input id="potrebno-igraca-input" name="izmeni-potrebno-igraca" type="number" max="99" min="1" value={oglas.PotrebnoIgraca} step="1" class="opacity-0">
+					</div>
+
+					if korisnik != nil && korisnik.Username == oglas.Vlasnik {
+						<div class="flex flex-row flex-nowrap justify-around mt-5">
+							<button id="otkazi-dugme" disabled class="border-2 border-red-600 rounded-lg px-5 py-3 text-red-600 hover:bg-red-600 hover:text-white hover:cursor-pointer
+                                        transition-all duration-200 disabled:border-black disabled:text-black disabled:hover:cursor-default disabled:hover:bg-(--crna)">
+								Otkaži
+							</button>
+							<button id="potvrdi-dugme" type="submit" disabled class="border-2 border-red-600 rounded-lg px-5 py-3 text-red-600 hover:bg-red-600 hover:text-white 
+										 hover:cursor-pointer transition-all duration-200 disabled:border-black disabled:text-black disabled:hover:cursor-default disabled:hover:bg-(--crna)">
+								Potvrdi
+							</button>
+						</div>
+					}
+					
+				</div>
+			</div>
+		
+		</form>
+
+		<div class="relative py-25 ">
+			<div class="absolute max-w-dvw w-dvw  top-0 -translate-x-85 bg-(--crna) py-15 text-center text-white uppercase text-5xl">komentari</div>
+		</div>
+
+		<div class="grid grid-cols-3 gap-5">
+			<div class="col-span-2">
+				{{
+					var username string
+					if korisnik != nil {
+						username = korisnik.Username
+					} 
+				}}
+				<form id="dodaj-komentar-forma" hx-post={ fmt.Sprintf("/api/dodajKomentar/%v", oglas.ID.Hex()) } hx-target="#komentari" hx-on::after-request="this.reset()" 
+						hx-vals={ fmt.Sprintf(`{"vlasnik": "%v"}`, username) } hx-swap="none" hx-trigger="keyup[key=='Enter' && !shiftKey]">
+					<textarea type="text" name="komentar-sadrzaj" id="komentar-input" placeholder="Dodaj komentar..." 
+						class="w-full bg-white shadow-md border border-gray-400 rounded-xl p-3 mt-5 resize-none"></textarea>
+				</form>
+				
+				<div id="komentari" class="mb-30">
+					if len(oglas.Komentari) == 0 {
+						@NemaKomentara()
+					} else {
+						{{
+							var username string
+							if korisnik != nil {
+								username = korisnik.Username
+							} 
+						}}
+						for _, komentar := range oglas.Komentari {
+							@CrtajKomentar(komentar, username, oglas.ID.Hex())
+						}
+					}
+				</div>
+			</div>
+		</div>
+		if korisnik != nil && korisnik.Username == oglas.Vlasnik {
+			<script src="/static/skripte/prikazOglasa.js"></script>
+		}
+	}
+}
+
+templ CrtajKomentar(komentar db.Komentar, korisnik string, oglasID string) {
+	<div class="flex flex-col flex-nowrap ms-5 py-3 relative font-bold font-mono" id={ fmt.Sprintf("komentar-%v", komentar.UUID) }>
+		<div>
+			<a href={ fmt.Sprintf("/profil/%v", komentar.Vlasnik) }>
+				<span class="uppercase text-red-600 hover:cursor-pointer">{ komentar.Vlasnik }</span>
+			</a>
+		</div>
+		<div class="text-sm text-gray-700">{ komentar.Sadrzaj }</div>
+		<div class="text-gray-400 text-xs flex flex-row flex-nowrap">	
+			<div class="text-gray-400 text-xs">{ komentar.Vreme.Format(time.DateTime) }</div>
+			if komentar.Vlasnik == korisnik {
+				<div hx-delete={ fmt.Sprintf("/api/obrisiKomentar/%v", komentar.UUID) } hx-target={ fmt.Sprintf("#komentar-%v", komentar.UUID) }
+					hx-trigger="click" hx-vals={ fmt.Sprintf(`{"oglasID": "%v"}`, oglasID) } hx-confirm="Da li ste sigurni da želite da obrišete komentar?"
+					class="group absolute top-5 right-5 ms-5 rounded-sm px-1 hover:cursor-pointer border border-gray-400 hover:border-red-600">
+						<div class="w-5 h-5 bg-cover bg-[url(/static/slike/kanta.png)] group-hover:bg-[url(/static/slike/kanta_hover.png)]"></div>
+				</div>
+			}
+		</div>
+	</div>
+}
+
+templ NemaKomentara() {
+	<div class="my-5 text-gray-700 font-bold font-mono">Nema komentara...</div>
+}

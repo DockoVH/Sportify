@@ -1,0 +1,187 @@
+package views
+
+import (
+    "fmt"
+
+    "Sportify/internal/db"
+)
+
+templ Raspored(korisnik *db.Korisnik) {
+	<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Sportify</title>
+
+        <link rel="stylesheet" href="/static/style.css">
+
+        <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz" crossorigin="anonymous"></script>
+        <script src="https://unpkg.com/htmx.org@1.9.0" integrity="sha384-aOxz9UdWG0yBiyrTwPeMibmaoq07/d3a96GCbb9x60f3mOt5zwkjdbcHFnKH8qls" crossorigin="anonymous"></script>
+
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin=""/>
+        <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+
+
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""/>
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
+        <script src="https://unpkg.com/htmx-remove@latest"
+                integrity="sha384-NwB2Xh66PNEYfVki0ao13UAFmdNtMIdBKZ8sNGRT6hKfCPaINuZ4ScxS6vVAycPT"
+                crossorigin="anonymous">
+        </script>
+    </head>
+    <body class="max-w-dvw bg-(--bela) select-none text-gray-400 font-mono font-bold">
+        if korisnik != nil {
+            <navbar class="bg-black sticky top-0 shadow-md grid grid-cols-14 px-50 z-10 text-gray-400">
+                <div class="col-span-4 flex flex-row flex-nowrap items-center justify-around text-[120%]">
+                    <div class="flex flex-row flex-nowrap">
+                        <a href={ fmt.Sprintf("/profil/%v", korisnik.Username) }>
+                            <img id="navbar-profil" src={ korisnik.SlikaBase64 } 
+                                class="max-h-12 border-2 border-red-600 rounded-xl overflow-hidden hover:cursor-pointer">
+                        </a>
+                        <div class="flex items-center">
+                            <a class="px-3 hover:text-red-600 hover:cursor-pointer" href={ fmt.Sprintf("/profil/%v", korisnik.Username) }>
+                                { korisnik.Username }
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-span-1"></div>
+                <div class="col-span-4 flex justify-center items-center">
+                    <a class="text-[270%] text-white hover:text-red-600 hover:cursor-pointer text-center" href="/">
+                        SPORTIFY
+                    </a>
+                </div>
+                <div class="col-span-1"></div>
+                <div class="col-span-4 flex items-center justify-around">
+                    <a class="text-[120%] hover:text-red-600 hover:cursor-pointer" href="/oglasi/?strana=1&brojOglasa=10">
+                        SVI OGLASI
+                    </a>
+                    <a id="napravi-oglas" class="hover:text-red-600 hover:cursor-pointer" href="/noviOglas/*">
+                        NAPRAVI OGLAS
+                    </a>
+                </div>
+            </navbar>
+
+            <div id="subbar-napravi-oglas" class="bg-(--crna) fixed top-0 left-0 max-w-dvw w-full h-16 flex flex-nowrap flex-row-reverse items-center justify-right z-9
+                transition-all duration-500 hover:translate-y-full pe-60 text-gray-400">
+                {{ 
+                    opcije := []string {"Košarka", "Fudbal", "Basket 3x3", "MMA", "Tenis", "Vaterpolo", "Boks"} 
+                }}
+                
+                for i, sport := range opcije {
+                    {{ 
+                        poslednji := i == len(opcije) - 1 
+                    }}
+
+                    <a href={ fmt.Sprintf("/noviOglas/%v", sport) }>
+                        if poslednji {
+                            <span class="hover:cursor-pointer hover:text-red-600 px-3">
+                                { sport }
+                            </span>
+                        } else {
+                            <span class="hover:cursor-pointer hover:text-red-600 px-3 border-s border-gray-400">
+                                { sport }
+                            </span>
+                        }
+                    </a>
+                }
+            </div>
+
+            <div id="subbar-profil" class="bg-(--crna) fixed top-0 left-0 max-w-dvw w-full h-16 flex flex-nowrap flex-row items-center justify-left z-9
+                    transition-all duration-500 hover:translate-y-full ps-90 text-gray-400">
+                <a class="hover:cursor-pointer hover:text-red-600 px-3 border-e border-gray-400 uppercase" href={ fmt.Sprintf("/profil/%v", korisnik.Username) }>
+                    profil
+                </a>
+                <span class="hover:cursor-pointer hover:text-red-600 px-3 border-gray-400 uppercase" hx-post="/api/logout" hx-trigger="click">
+                    odjavi se
+                </span>
+            </div>
+        } else {
+            <navbar class="bg-black sticky top-0 shadow-md grid grid-cols-14 px-50 z-10">
+                <div class="col-span-4 flex flex-row flex-nowrap items-center justify-around text-[120%]">
+                    <span class="hover:text-red-600 hover:cursor-pointer" hx-get="/login" hx-trigger="click" hx-target="body" hx-push-url="true">
+                        PRIJAVI SE
+                    </span>
+                    <span class="hover:text-red-600 hover:cursor-pointer" hx-get="/signup" hx-trigger="click" hx-target="body" hx-push-url="true">
+                        REGISTRUJ SE
+                    </span>
+                </div>
+                <div class="col-span-1"></div>
+                <div class="col-span-4 flex justify-center items-center">
+                    <a class="text-[270%] text-white hover:text-red-600 hover:cursor-pointer text-center" href="/">
+                        SPORTIFY
+                    </a>
+                </div>
+                <div class="col-span-1"></div>
+                <div class="col-span-4 flex items-center justify-around">
+                    <a class="text-[120%] hover:text-red-600 hover:cursor-pointer" href="/oglasi/?strana=1&brojOglasa=10">
+                        SVI OGLASI
+                    </a>
+                </div>
+            </navbar>
+        }
+
+		<div class="bg-(--bela) relative z-8">
+			<div class="mx-80">
+				{ children... }				
+			</div>
+		</div>
+        
+        <footer class="sticky bottom-0 bg-black flex items-center justify-center px-55 pt-8 pb-34">
+            <div class="flex flex-row flex-nowrap justify-between w-full">
+                <div class="flex flex-row flex-nowrap items-start">
+                    <div class="text-white text-[300%] pe-2">SPORIFY</div>
+                    <div class="text-white text-sm pt-4 pe-2 flex flex-row flex-nowrap hover:cursor-pointer">
+                        <span class="">SPORTIFY - SRBIJA</span>
+                        <img src="/static/slike/bela_strelica_dole.png" class="max-h-4 ps-2 pt-1">
+                    </div>
+                </div>
+                <nav>
+                <ul class="flex flex-row flex-nowrap">
+                    <li class="max-w-50">
+                        <ul class="text-white text-sm pe-4">
+                            <li class="text-lg pb-2">DRUŠTVENE MREŽE</li>
+                            <li class="pb-2">
+                                <a href="https://www.facebook.com" class="text-gray-400 hover:text-white">FACEBOOK</a>
+                            </li>
+                            <li class="pb-2">
+                                <a href="https://www.instagram.com" class="text-gray-400 hover:text-white">INSTAGRAM</a>
+                            </li>
+                            <li class="pb-2">
+                                <a href="https://www.x.com" class="text-gray-400 hover:text-white">TWITTER</a>
+                            </li>
+                            <li class="pb-2">
+                                <a href="https://www.threads.com" class="text-gray-400 hover:text-white">THREADS</a>
+                            </li>
+                            <li class="pb-2">
+                                <a href="https://www.youtube.com" class="text-gray-400 hover:text-white">YOUTUBE</a>
+                            </li>
+                            <li class="pb-2">
+                                <a href="https://www.tiktok.com" class="text-gray-400 hover:text-white">TIKTOK</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="max-w-50">
+                        <ul class="text-white text-sm pe-4">
+                            <li class="text-lg pb-2">POMOĆ</li>
+                            <li class="pb-2">
+                                <a href="/faq" class="text-gray-400 hover:text-white">ČESTO POSTAVLJANA PITANJA</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+            </div>
+        </footer>
+
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <script src="https://unpkg.com/hyperleaflet"></script>
+		<script src="/static/skripte/raspored.js"></script>
+    </body>
+    </html>
+}

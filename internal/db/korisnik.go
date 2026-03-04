@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"errors"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -11,14 +10,15 @@ import (
 
 type Korisnik struct {
 	Username string `bson:"_id"`
+	Ime string `bson:"ime"`
+	Prezime string `bson:"prezime"`
 	LozinkaHes string `bson:"lozinka_hes"`
 	SlikaBase64 string `bson:"slika_base64"`
 	Ocene []Ocena `bson:"ocene,omitempty"`
-	Admin bool `bson:"admin"`
 }
 
 type Ocena struct {
-	UUID string `bson:"uuid"`
+	UUID string `bson:"_id"`
 	Vlasnik string `bson:"vlasnik"`
 	Vrednost uint `bson:"vrednost"`
 }
@@ -90,15 +90,15 @@ func SviKorisnici(mongoClient *mongo.Client) ([]Korisnik, error) {
 	return sviKorisnici, err
 }
 
-func VratiOcenuKorisnika(mongoClient *mongo.Client, username string, ocenaUUID string) (*Ocena, error) {
+func VratiOcenuKorisnika(mongoClient *mongo.Client, korisnikUsername string, vlasnikUsername string) (*Ocena, error) {
 	korisnici := mongoClient.Database("sportify").Collection("korisnici")
 
     ctx := context.Background()
-    filter := bson.M { "_id": username }
+    filter := bson.M { "_id": korisnikUsername }
     projekcija := bson.M {
         "ocene": bson.M {
             "$elemMatch": bson.M {
-                "uuid": ocenaUUID,
+                "vlasnik": vlasnikUsername,
             },
         },
     }
@@ -118,7 +118,7 @@ func VratiOcenuKorisnika(mongoClient *mongo.Client, username string, ocenaUUID s
     }
 
     if len(rezultat.Ocene) == 0 {
-        return nil, errors.New("Ne postoji ocena sa datim UUID-em.")
+        return nil, mongo.ErrNoDocuments
     }
 
     return &rezultat.Ocene[0], nil
@@ -155,7 +155,7 @@ func IzmeniOcenuKorisnika(mongoClient *mongo.Client, username string, ocena Ocen
 		"_id": username,
 		"ocene": bson.M {
 			"$elemMatch": bson.M {
-				"uuid": ocena.UUID,
+				"_id": ocena.UUID,
 			},
 		},
 	}
@@ -185,7 +185,7 @@ func ObrisiOcenuKorisnika(mongoClient *mongo.Client, username string, ocenaUUID 
 	update := bson.M {
 		"$pull": bson.M {
 			"ocene": bson.M {
-				"uuid": ocenaUUID,
+				"_id": ocenaUUID,
 			},
 		},
 	}

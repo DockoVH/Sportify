@@ -9,7 +9,6 @@ import (
 
 type Lokacija struct {
 	Mesto string `bson:"_id"`
-	Koordinate [2]float64 `bson:"koordinate,omitempty"`
 }
 
 func VratiLokaciju(mongoClient *mongo.Client, mesto string) (*Lokacija, error) {
@@ -65,16 +64,15 @@ func ObrisiLokaciju(mongoClient *mongo.Client, mesto string) (int64, error) {
 
 }
 
-func SveLokacije(mongoClient *mongo.Client) ([]Lokacija, error) {
+func SveLokacije(mongoClient *mongo.Client) (sveLokacije []Lokacija, err error) {
 	lokacije := mongoClient.Database("sportify").Collection("lokacije")
 	ctx := context.Background()
 
 	cursor, err := lokacije.Find(ctx, bson.D {{}})
 	if err != nil {
-		return make([]Lokacija, 0), err
+		return sveLokacije, err
 	}
 
-	var sveLokacije []Lokacija
 	err = cursor.All(ctx, &sveLokacije)
 
 	return sveLokacije, err

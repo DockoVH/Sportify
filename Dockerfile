@@ -15,7 +15,7 @@ FROM alpine:latest AS run
 WORKDIR /app
 
 COPY --from=build /sportify /app/sportify
-COPY ./cmd/api/static/* /app/static/
+COPY ./cmd/api/static/ /app/static/
 COPY ./cmd/api/index.html /app/
 
 EXPOSE 8080

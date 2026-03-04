@@ -1,0 +1,124 @@
+package views
+
+import (
+	"fmt"
+	"time"
+	
+	"Sportify/internal/db"
+)
+
+templ SviOglasi(korisnik *db.Korisnik, oglasi []db.Oglas, sportovi []db.Sport, lokacije []db.Lokacija, strana int, ukupnoStrana int, oglasaPoStrani int) {
+	@Raspored(korisnik) {
+		<div class="grid grid-cols-3 gap-5 font-bold font-mono">
+		
+			<div class="col-span-2 p-5" id="oglasi">
+				@FiltriraniOglasi(oglasi)
+
+				<div class="flex flex-row flex-nowrap justify-center p-3">
+					if strana > 1 {
+						<a href={ fmt.Sprintf("/oglasi/?strana=1&brojOglasa=%v", oglasaPoStrani) }>
+							<div class="shadow-md border border-gray-400 p-5 mx-1 rounded-lg hover:cursor-pointer hover:bg-gray-200">{ "<<" }</div>
+						</a>
+						<a href={ fmt.Sprintf("/oglasi/?strana=%v&brojOglasa=%v", strana - 1, oglasaPoStrani) }>
+							<div class="shadow-md border border-gray-400 p-5 mx-1 rounded-lg hover:cursor-pointer hover:bg-gray-200">{ "<" }</div>
+						</a>
+					} else {
+						<div class="shadow-md border border-gray-400 bg-gray-300 text-gray-400 p-5 mx-1 rounded-lg">{ "<<" }</div>
+						<div class="shadow-md border border-gray-400 bg-gray-300 text-gray-400 p-5 mx-1 rounded-lg">{ "<" }</div>
+					}
+					
+					<div class="shadow-md border border-gray-400 p-5 mx-1 rounded-lg">{ strana }</div>
+
+					if strana < ukupnoStrana {
+						<a href={ fmt.Sprintf("/oglasi/?strana=%v&brojOglasa=%v", strana + 1, oglasaPoStrani) }>
+							<div class="shadow-md border border-gray-400 p-5 mx-1 rounded-lg hover:cursor-pointer hover:bg-gray-200">{ ">" }</div>
+						</a>
+						<a href={ fmt.Sprintf("/oglasi/?strana=%v&brojOglasa=%v", ukupnoStrana, oglasaPoStrani) }>
+							<div class="shadow-md border border-gray-400 p-5 mx-1 rounded-lg hover:cursor-pointer hover:bg-gray-200">{ ">>" }</div>
+						</a>
+					} else {
+						<div class="shadow-md border border-gray-400 bg-gray-300 text-gray-400 p-5 mx-1 rounded-lg">{ ">" }</div>
+						<div class="shadow-md border border-gray-400 bg-gray-300 text-gray-400 p-5 mx-1 rounded-lg">{ ">>" }</div>
+					}
+				</div>
+			</div>
+
+			<form class="col-span-1 px-5 pt-15 max-h-dvh" hx-post="/api/oglasiFilter" hx-trigger="change" hx-target="#oglasi">
+				<div class="text-black text-3xl mb-3 uppercase">filteri</div>
+
+				<div class="flex flex-col flex-nowrap px-4 py-6 shadow-md bg-white relative max-h-1/3">
+					<div class="absolute top-0 left-0 w-23 h-2 bg-red-600 -translate-y-1/2 translate-x-1/3 -skew-x-12"></div>
+					<div class="text-xl text-black uppercase">sport</div>
+
+					<div class="border border-gray-300 rounded-xl p-2 overflow-y-scroll" >
+						for _, sport := range sportovi {
+							<div class="ps-2 mt-1">
+								<input id={ fmt.Sprintf("filter-sport-%v", sport.Naziv) } name={ fmt.Sprintf("filter-input-sport-%v", sport.Naziv) }
+									type="checkbox" class="accent-red-600 scale-130 hover:cursor-pointer">
+								<label for={ fmt.Sprintf("filter-sport-%v", sport.Naziv) }>{ sport.Naziv }</label>
+							</div>
+						}
+					</div>
+				</div>
+
+				<div class="flex flex-col flex-nowrap px-4 py-6 shadow-md bg-white relative max-h-1/3">
+					<div class="absolute top-0 left-0 w-23 h-2 bg-red-600 -translate-y-1/2 translate-x-1/3 -skew-x-12"></div>
+					<div class="text-xl text-black uppercase">mesto</div>
+
+					<div class="border border-gray-300 rounded-xl p-2 overflow-y-scroll">
+						for _, lokacija := range lokacije {
+							<div class="ps-2 mt-1">
+								<input id={ fmt.Sprintf("filter-mesto-%v", lokacija.Mesto) } name={ fmt.Sprintf("filter-input-lokacija-%v", lokacija.Mesto) }
+									type="checkbox" class="accent-red-600 scale-130 hover:cursor-pointer">
+								<label for={ fmt.Sprintf("filter-mesto-%v", lokacija.Mesto) }>{ lokacija.Mesto }</label>
+							</div>
+						}
+					</div>
+				</div>
+
+				<div class="flex flex-col flex-nowrap px-4 py-6 shadow-md bg-white relative mt-8">
+					<div class="absolute top-0 left-0 w-23 h-2 bg-red-600 -translate-y-1/2 translate-x-1/3 -skew-x-12"></div>
+					<div class="text-xl text-black">DATUM</div>
+					
+					<label for="filter-datum-od" class="mt-3 mb-1 ps-1">Od:</label>
+					<input id="filter-datum-od" type="date" name="filter-input-datum-od" class="border border-gray-600 rounded-full p-1 hover:cursor-pointer">
+
+					<label for="filter-datum-do" class="mt-3 mb-1 ps-1">Do:</label>
+					<input id="filter-datum-do" type="date" name="filter-input-datum-do" class="border border-gray-600 rounded-full p-1 hover:cursor-pointer">
+				</div>
+						
+			</form>
+
+		</div>
+	}
+}
+
+templ FiltriraniOglasi(oglasi []db.Oglas) {
+	<div class="text-black text-5xl mb-10 uppercase font-bold font-mono">oglasi</div>
+
+	if len(oglasi) > 0 {
+		for _, oglas := range oglasi {
+			@crtajOglas(oglas)
+		}
+	} else {
+		<div class="uppercase font-bold font-mono">Nije pronadjen nijedan oglas...</div>
+	}
+}
+
+templ crtajOglas(oglas db.Oglas) {
+	<a class="bg-white shadow-md hover:shadow-lg hover:cursor-pointer grid grid-cols-5 group mx-5 my-8 font-bold font-mono"
+		href={ fmt.Sprintf("/oglas/%v", oglas.ID.Hex()) }>
+		<div class="col-span-2 overflow-hidden">
+			<div class={ fmt.Sprintf("aspect-square bg-cover bg-[url('/static/slike/%v.png')] group-hover:scale-110 transition-all duration-500", oglas.Sport) }></div>
+		</div>
+		<div class="col-span-3 bg-white relative flex flex-col flex-nowrap justify-center px-5 py-10 text-2xl transition-colors duration-500">                    
+			<div class="absolute top-0 left-0 w-23 h-2 bg-red-600 -translate-y-1/2 translate-x-1/3 -skew-x-12"></div>
+			<div class="uppercase">{ oglas.Sport }</div>
+			<div class="uppercase text-black group-hover:text-red-600 text-3xl mt-4 transition-colors duration-300">{ oglas.Mesto }</div>
+			<div class="uppercase text-black group-hover:text-red-600 text-3xl my-2 transition-colors duration-300">
+				{ fmt.Sprintf("%v | %v", oglas.Vreme.Format(time.DateOnly), oglas.Vreme.Format(time.TimeOnly)[:5]) }
+			</div>
+			<div class="uppercase text-black group-hover:text-red-600 text-3xl transition-colors duration-300">Potrebno igrača: { oglas.PotrebnoIgraca }</div>
+		</div>
+	</a>
+}

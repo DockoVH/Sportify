@@ -1,6 +1,5 @@
-.a
+:root
 {
-    border: 1px solid greenyellow;
-    padding: 15px;
-    margin-top: 20px;
+    --bela: #f0f2f5;
+    --crna: #171717;
 }
